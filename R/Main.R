@@ -4,13 +4,17 @@
 #' @author Zhiwei Zhou
 #' @param peak_table_unlabel unlabeled peak table
 #' @param peak_table_label labeled peak table
+#' @param sample_info sample information, e.g. sample_info.xlsx
 #' @param path working directory. Default: "."
-#' @param control_group label of control groups. e.g. c("WT_UA", "WT_13CUA")
-#' @param case_group label of case groups. e.g. c('ygeX_UA', 'ygeX_13CUA')
+#' @param polarity ionization polarity, either 'positive' or 'negative'. Default: 'positive'
+#' @param control_group label of control groups. e.g. c("WT")
+#' @param case_group label of case groups. e.g. c('hyuA')
 #' @param mz_tol Default: 10 ppm
 #' @param rt_tol Default: 0.05 min
 #' @param p_value_cutoff Default: 0.05
+#' @param p_adjust whether to adjust p-values using the Benjamini-Hochberg method. Default: TRUE
 #' @param fold_change_cutoff Default: 20
+#' @param is_recognize_adducts whether to recognize adducts, neutral losses, and in-source fragments. Default: TRUE
 #' @importFrom magrittr %>%
 #' @importFrom crayon blue red yellow green bgRed
 #' @importFrom stringr str_detect str_extract
@@ -232,7 +236,7 @@ find_intemidates <- function(peak_table_unlabel,
       raw_data_path_13C <- paste0(case_group, '_13C')
     } else {
       raw_data_path_12C <- raw_data_folder[[paste0(case_group, '_12C')]]
-      raw_data_path_13C <- raw_data_folder[[paste0(case_group, '_12C')]]
+      raw_data_path_13C <- raw_data_folder[[paste0(case_group, '_13C')]]
     }
 
 
@@ -530,16 +534,17 @@ find_pair_feature <- function(target_mz,
 # startup massage --------------------------------------------------------------
 .onAttach <- function(libname, pkgname){
   packageStartupMessage("
-Version 0.1.0
+Version 0.1.1
 -------------
 Authors: Zhiwei Zhou
 Maintainer: Zhiwei Zhou
 
-Updates
+Updates (20250619)
 -------------
 o Modify the initial version from Nature Microbiology paper (DoddLabTracer)
 o Adjust the structure of the package
 o Support the xcms, msdial, and mzmine workflows
+o Add README and initial commit
 
 ")
 }

@@ -2,13 +2,14 @@
 
 
 [![](https://www.r-pkg.org/badges/version/masstools?color=green)](https://cran.r-project.org/package=IsoPairFinder)
+[![](https://img.shields.io/github/languages/code-size/DoddLab/IsoPairFinder)](https://github.com/DoddLab/IsoPairFinder)
+[![](https://img.shields.io/github/contributors/JustinZZW/ZZWtool)](https://github.com/DoddLab/IsoPairFinder)
 
-- Author: Zhiwei Zhou (zhouzw@stanford.edu)
-- Created: 06/19/2025
-- Last modified: 06/19/2025
+<br><br>
+
 
 ## Overview
-**IsoPairFinder** is an R package designed to identify potential intermediates from Stable Isotope Tracing (SIT) metabolomics data for accelerating the elucidation of the metabolism pathway in the gut microbes. It provides the first end-to-end workflow serving this objective, including (1) identifying differential ion signals introduced by the gene mutation; (2) merging of the redundant LC-MS signals (isotopes, adducts, and in-source fragments); (3) pairing 12C/13C features to determine potential intermediates. It is also compatible with different metabolomics data processing tools. 
+**IsoPairFinder** is an R package designed to identify potential intermediates from Stable Isotope Tracing (SIT) metabolomics data for accelerating the elucidation of the metabolism pathway in the gut microbes. It provides the first end-to-end workflow serving this objective, including (1) identifying differential ion signals introduced by the gene mutation; (2) merging of the redundant LC-MS signals (isotopes, adducts, and in-source fragments); (3) pairing 12C/13C features to determine potential intermediates. It is also compatible with different metabolomics data processing tools. The **Detailed Tutorial** could be found [here](xxx).
 
 
 
@@ -37,24 +38,38 @@ devtools::install_github("DoddLab/DoddLabTracer")
 ```
 
 ## Usage
-This is a basic example of HyuA mutants to get you started. The Study design could be found [here](xxx)
+This is a basic example of HyuA mutants to get you started. The Study design could be found [here](xxx).  
+
+The Demo data could be downloaded [here](xxx). Briefly, the files contains:
+
+- `peak_table_C12.csv`: the peak area table of unlabeled group (WT and HyuA mutants fed with uric acid)
+- `peak_table_C13.csv`: the peak area table of labeled group (WT and HyuA mutants fed with 13C-uric acid)
+- `sample_info.xlsx`: the sample information file, which contains the sample names, groups, and other metadata
+- `WT_12C`: the folder contains raw data of unlabeled WT (xmML)
+- `hyuA_12C`: the folder contains raw data of unlabeled mutation (xmML)
+- `WT_13C`: the folder contains raw data of labeled WT (xmML)
+- `hyuA_13C`: the folder contains raw data of labeled mutation (xmML)
+- `ms2`: the folder includes MS/MS files (xmML)
+
+
 
 ```r
 library(tidyverse)
-library(DoddLabTracer)
+library(IsoPairFinder)
 
 # analysis of HyuA 
-find_intemidates(peak_table_unlabel = 'hyuA_UA_48h_area.txt',
-                 peak_table_label = 'hyuA_13CUA_48h_area.txt',
-                 path = '~/Project/00_Uric_Acid_project/Data/20240319_isotope_tracing_analysis/hyuA/',
-                 control_group = c("WT_UA", "WT_13CUA"),
-                 case_group = c('hyuA_UA', 'hyuA_13CUA'),
-                 polarity = 'positive',
+find_intemidates(peak_table_unlabel = 'peak_table_C12.csv',
+                 peak_table_label = 'peak_table_C13.csv',
+                 sample_info = 'sample_info.xlsx',
+                 path = '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_msdial/',
+                 polarity = c('positive', 'negative'),
+                 control_group = c("WT"),
+                 case_group = c('hyuA'),
                  mz_tol = 10,
                  rt_tol = 0.05,
                  p_value_cutoff = 0.05,
-                 fold_change_cutoff = 10,
-                 p_adjust = FALSE,
+                 p_adjust = TRUE,
+                 fold_change_cutoff = 20,
                  is_recognize_adducts = TRUE)
 
 ```
