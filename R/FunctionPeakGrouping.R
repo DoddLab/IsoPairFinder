@@ -1652,6 +1652,7 @@ retrieve_ms2_data <- function(peak_table,
                               rt_tol_combine_ms1_ms2 = 20
 ) {
   cat('Retrive, purify, and combine MS2 with MS1\n')
+  ms2_type <- match.arg(ms2_type)
   # browser()
   # convert enriched table to a ms1_data
 
@@ -1675,8 +1676,8 @@ retrieve_ms2_data <- function(peak_table,
   ms1_data <- list(info = variable_data, subject = expression_profile_data)
   rm(variable_data, expression_profile_data);gc()
 
-  ms2_file <- list.files(file.path(path, 'ms2'), pattern = 'mzML', recursive = TRUE)
-  ms2_data <- DoddLabMetID::read_ms2(file.path(path, 'ms2', ms2_file), ms2_type = 'mzML')
+  ms2_file <- list.files(file.path(path, 'ms2'), pattern = ms2_type, recursive = TRUE)
+  ms2_data <- DoddLabMetID::read_ms2(file.path(path, 'ms2', ms2_file), ms2_type = ms2_type)
 
   ms2_data <- DoddLabMetID::integrate_ms2(ms2_data = ms2_data,
                                           ms2_file = file.path(path, 'ms2', ms2_file),

@@ -98,7 +98,7 @@ find_intemidates <- function(peak_table_unlabel,
   raw_data_unlabel <- readr::read_csv(file.path(path, peak_table_unlabel), show_col_types = FALSE)
   raw_data_label <- readr::read_csv(file.path(path, peak_table_label), show_col_types = FALSE)
   if (stringr::str_detect(sample_info, '\\.xlsx$')) {
-    sample_info <- readxl::read_xlsx(file.path(path, 'sample_info.xlsx'))
+    sample_info <- readxl::read_xlsx(file.path(path, sample_info))
   } else {
     sample_info <- readr::read_csv(file.path(path, sample_info))
   }
@@ -364,7 +364,7 @@ find_intemidates <- function(peak_table_unlabel,
     temp_files <- list.files(path = file.path(path, raw_data_path_13C), recursive = TRUE)
     eic_data_label <- extract_eic_data(path = path,
                                        files = file.path(raw_data_path_13C, temp_files),
-                                       mz_list = pair_table$unlabeled_mz,
+                                       mz_list = pair_table$labeled_mz,
                                        mz_tol = mz_tol)
   } else {
     eic_data_label <- extract_eic_data(path = path,
@@ -387,8 +387,22 @@ find_intemidates <- function(peak_table_unlabel,
 
   dir.create(file.path(path, '00_tracer_result'), showWarnings = FALSE, recursive = TRUE)
   ggplot2::ggsave(plot = temp_plot,
-                  filename = file.path(path, '00_tracer_result', 'isotope_pair_plot.pdf'),
+                  filename = file.path(path, '00_tracer_result', 'isotope_pair_plot_overview.pdf'),
                   width = 8, height = 6)
+
+  temp_plot_list <- plot_selected_pair(signif_feature_unlabeled = feature_sig_unlabel,
+                                       signif_feature_labeled = feature_sig_label,
+                                       pair_table = pair_table,
+                                       eic_data_unlabel = eic_data_unlabel,
+                                       eic_data_label = eic_data_label,
+                                       mz_tol = mz_tol,
+                                       rt_unit = rt_unit)
+
+  ggplot2::ggsave(
+    filename = file.path(path, '00_tracer_result', 'isotope_pair_list.pdf'),
+    plot = gridExtra::marrangeGrob(temp_plot_list, nrow=1, ncol=1),
+    width = 15, height = 9
+  )
 
   message(crayon::blue('Done!\n'))
 

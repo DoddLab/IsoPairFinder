@@ -74,3 +74,17 @@
 #                  fold_change_cutoff = 20,
 #                  is_recognize_adducts = TRUE)
 
+
+# find_intemidates(peak_table_unlabel = 'peak_table_C12.csv',
+#                  peak_table_label = 'peak_table_C13.csv',
+#                  sample_info = 'sample_info.csv',
+#                  path = '~/Project/00_Uric_Acid_project/Data/20250619_demo_data/test/',
+#                  polarity = 'positive',
+#                  control_group = c("WT"),
+#                  case_group = c('hyuA'),
+#                  mz_tol = 10,
+#                  rt_tol = 0.05,
+#                  p_value_cutoff = 0.05,
+#                  p_adjust = TRUE,
+#                  fold_change_cutoff = 20,
+#                  is_recognize_adducts = TRUE)

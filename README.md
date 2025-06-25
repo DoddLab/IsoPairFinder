@@ -40,16 +40,16 @@ devtools::install_github("DoddLab/DoddLabTracer")
 ## Usage
 This is a basic example of HyuA mutants to get you started. The Study design could be found [here](xxx).  
 
-The Demo data could be downloaded [here](xxx). Briefly, the files contains:
+The Demo data could be downloaded [here](https://github.com/DoddLab/IsoPairFinder_demo_data). Briefly, the files contains:
 
 - `peak_table_C12.csv`: the peak area table of unlabeled group (WT and HyuA mutants fed with uric acid)
 - `peak_table_C13.csv`: the peak area table of labeled group (WT and HyuA mutants fed with 13C-uric acid)
 - `sample_info.xlsx`: the sample information file, which contains the sample names, groups, and other metadata
-- `WT_12C`: the folder contains raw data of unlabeled WT (xmML)
-- `hyuA_12C`: the folder contains raw data of unlabeled mutation (xmML)
-- `WT_13C`: the folder contains raw data of labeled WT (xmML)
-- `hyuA_13C`: the folder contains raw data of labeled mutation (xmML)
-- `ms2`: the folder includes MS/MS files (xmML)
+- `WT_12C`: the folder contains raw data of unlabeled WT (mzML)
+- `hyuA_12C`: the folder contains raw data of unlabeled mutation (mzML)
+- `WT_13C`: the folder contains raw data of labeled WT (mzML)
+- `hyuA_13C`: the folder contains raw data of labeled mutation (mzML)
+- `ms2`: the folder includes MS/MS files (mzML)
 
 
 

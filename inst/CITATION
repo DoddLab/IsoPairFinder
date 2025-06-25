@@ -2,15 +2,15 @@ citHeader("To cite IsoPairFinder in publications use:")
 
 citEntry(
   entry    = "Article",
-  title    = ,
-  author   = ,
-  journal  = ,
-  year     = ,
-  volume   = ,
-  number   = ,
-  pages    = ,
-  url      = ,
-  textVersion = paste(
-
-  )
+  title    = “IsoPairFinder: An R package for identifying potential intermediates from Stable Isotope Tracing metabolomics data”,
+  author   = Zhiwei Zhou,
+#  journal  = ,
+  year     = 2025,
+#  volume   = ,
+#  number   = ,
+#  pages    = ,
+  url      = “https://github.com/DoddLab/IsoPairFinder”
+#  textVersion = paste(
+#
+#  )
 )

@@ -1,7 +1,7 @@
 Package: IsoPairFinder
 Type: Package
 Title: IsoPairFinder: A Package for Finding Isotopic Pairs in Mass Spectrometry Data
-Version: 0.1.1
+Version: 0.1.2
 Author: Zhiwei Zhou
 Maintainer: Zhiwei Zhou <zhouzw@stanford.edu>
 Description: This package is designed to identify potential intermediates from Stable 
@@ -12,6 +12,7 @@ Encoding: UTF-8
 LazyData: true
 Imports: 
     crayon,
+    DoddLabMetID,
     dplyr,
     masstools,
     MassToolsMjhelf,

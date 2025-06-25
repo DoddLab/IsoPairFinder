@@ -386,7 +386,7 @@ check_parameters <- function(peak_table_unlabel,
   if (stringr::str_detect(sample_info, '\\.xlsx')) {
     sample_info <- readxl::read_xlsx(file.path(path, sample_info))
   } else if (stringr::str_detect(sample_info, '\\.csv')) {
-    sample_info <- readr::read_csv(file.path(path, sample_info))
+    sample_info <- readr::read_csv(file.path(path, sample_info), show_col_types = FALSE)
   } else {
     stop('The sample_info should be a csv or xlsx file')
   }
