@@ -61,27 +61,17 @@ plot_isotope_pairs <- function(signif_feature_unlabeled,
                                mz_tol = 10) {
 
   match.arg(rt_unit)
-  # browser()
 
-  # point table
-  # temp_labeled <- signif_feature_unlabeled %>%
-  #   dplyr::select(id, mz, rt, get(average_abundance), q_value, fold_change) %>%
-  #   dplyr::mutate(group_label = 'Unlabeled',
-  #                 delta_mz = 0.1)
-  #
-  # temp_unlabeled <- signif_feature_labeled %>%
-  #   dplyr::select(id, mz, rt, average_abundance, q_value, fold_change) %>%
-  #   dplyr::mutate(group_label = 'Labeled',
-  #                 delta_mz = -0.1)
-
-  temp_labeled <- signif_feature_unlabeled %>%
+  # filter to only keep the features in pair_table
+  temp_unlabeled <- signif_feature_unlabeled %>%
     dplyr::select(id, mz, rt, col_abundance, q_values, fold_change) %>%
-    # dplyr::rename('average_abundance' = col_abundance) %>%
+    dplyr::filter(id %in% pair_table$unlabeled_feature_id) %>%
     dplyr::mutate(group_label = 'Unlabeled',
                   delta_mz = 0.1)
 
-  temp_unlabeled <- signif_feature_labeled %>%
+  temp_labeled <- signif_feature_labeled %>%
     dplyr::select(id, mz, rt, col_abundance, q_values, fold_change) %>%
+    dplyr::filter(id %in% pair_table$labelded_feature_id) %>%
     dplyr::mutate(group_label = 'Labeled',
                   delta_mz = -0.1)
 
@@ -101,11 +91,8 @@ plot_isotope_pairs <- function(signif_feature_unlabeled,
   point_table$delta_mz[temp_idx1] <- pair_table$mz_adj1
   point_table$delta_mz[temp_idx2] <- pair_table$mz_adj2
 
-  # segment table1
-  segment_table <- pair_table %>%
-    dplyr::mutate(rt_mean = (unlabeled_rt + labeled_rt)/2) %>%
-    dplyr::mutate(rt_adj = rt_mean - 0.1) %>%
-    dplyr::select(mz_adj1, mz_adj2, rt_mean, rt_adj, mass_shift_label)
+  point_table <- point_table %>%
+    dplyr::filter(id %in% c(pair_table$unlabeled_feature_id, pair_table$labelded_feature_id))
 
   # rescale EICs
   temp_scale <- round(pair_table$labeled_mz - pair_table$unlabeled_mz) %>% max()
@@ -113,6 +100,42 @@ plot_isotope_pairs <- function(signif_feature_unlabeled,
     dplyr::mutate(int_adj = int/max(int)*(-temp_scale/2) - 0.1)
   eic_data_label <- eic_data_label %>%
     dplyr::mutate(int_adj = int/max(int)*(temp_scale/2) + 0.1)
+
+  # calculate the relative intensity for each point
+  temp_int <- sapply(seq_along(point_table$id), function(i) {
+    temp_id <- point_table$id[i]
+    temp_group_label <- point_table$group_label[i]
+    temp_mz <- point_table$mz[i]
+    temp_rt <- as.numeric(point_table$rt[i])
+
+    if (temp_group_label == 'Labeled') {
+      temp_max_int <- eic_data_label %>%
+        dplyr::filter(precursor_mz == temp_mz) %>%
+        dplyr::filter(abs(rt - temp_rt) <= 0.1) %>%
+        dplyr::pull(int_adj) %>%
+        max()
+    } else {
+      temp_max_int <- eic_data_unlabel %>%
+        dplyr::filter(precursor_mz == temp_mz) %>%
+        dplyr::filter(abs(rt - temp_rt) <= 0.1) %>%
+        dplyr::pull(int_adj) %>%
+        min()
+    }
+
+    return(temp_max_int)
+  })
+
+
+  point_table <- point_table %>%
+    dplyr::mutate(adj_int = temp_int)
+
+
+  text_unlabel <- paste0('Unlabeled features (12C): ', nrow(signif_feature_unlabeled), '\n',
+                         'Paired features: ', nrow(pair_table), '\n')
+
+  text_label <- paste0('Labeled features (13C): ', nrow(signif_feature_labeled), '\n',
+                       'Paired features: ', nrow(pair_table), '\n')
+
 
   if (rt_unit == 'seconds') {
     eic_data_unlabel$rt <- eic_data_unlabel$rt*60
@@ -124,54 +147,31 @@ plot_isotope_pairs <- function(signif_feature_unlabeled,
     xlab_text <- 'RT (minutes)'
   }
 
-
   temp_plot <- ggplot2::ggplot(point_table) +
-    ggplot2:: geom_line(data = eic_data_label,
+    ggplot2::geom_line(data = eic_data_label,
                         ggplot2::aes(x = rt, y = int_adj, color = precursor_mz),
                         alpha = 0.6) +
     ggplot2::geom_line(data = eic_data_unlabel,
                        ggplot2::aes(x = rt, y = int_adj, color = precursor_mz), alpha = 0.6) +
-    ggplot2::geom_segment(data = segment_table,
-                          ggplot2::aes(x = rt_adj,
-                                       y = mz_adj1,
-                                       xend = rt_adj,
-                                       yend = mz_adj2),
-                          color = 'gray') +
-    ggplot2::geom_segment(data = segment_table,
-                          ggplot2::aes(x = rt_adj,
-                                       y = mz_adj1,
-                                       xend = rt_mean,
-                                       yend = mz_adj1),
-                          color = 'gray') +
-    ggplot2::geom_segment(data = segment_table,
-                          ggplot2::aes(x = rt_adj,
-                                       y = mz_adj2,
-                                       xend = rt_mean,
-                                       yend = mz_adj2),
-                          color = 'gray') +
     ggplot2::geom_point(ggplot2::aes(x = rt,
-                                     y = delta_mz,
+                                     y = adj_int,
                                      fill = group_label,
                                      size = fold_change),
                         alpha = 0.5, shape = 21) +
     ggrepel::geom_text_repel(
-      data = subset(point_table, abs(delta_mz) > 0.5 ),
-      ggplot2::aes(x = rt, y = delta_mz, label = id),
-      position = position_jitter(seed = 1)
+      data = point_table,
+      ggplot2::aes(x = rt, y = adj_int, label = id),
+      position = ggplot2::position_jitter(seed = 1)
     ) +
     ggplot2::geom_hline(yintercept = 0) +
-    ggplot2::scale_fill_manual(values = c('Labeled' = 'red',
-                                          'Unlabeled' = 'black'),
+    ggplot2::scale_fill_manual(values = c('Labeled' = '#fc8070',
+                                          'Unlabeled' = '#7fb1d3'),
                                label = c('Labeled' = '13C',
                                          'Unlabeled' = '12C'),
-                               name = 'Group') +
+                               name = 'Tracer group') +
     ggplot2::scale_colour_discrete(name = 'Precursor m/z') +
     ggplot2::scale_size_continuous(range = c(1, 10),
-                                   name = paste0('Fold_change (Mutant/WT)')) +
-    ggplot2::scale_y_continuous(breaks = c((seq(-floor(temp_scale/2), -1, by = 1)) - 0.1,
-                                           0,
-                                           (seq(1, floor(temp_scale/2), by = 1)) + 0.1),
-                                labels = seq(-floor(temp_scale/2), floor(temp_scale/2), by = 1)) +
+                                   name = paste0('Fold change (Mutant/WT)')) +
     ggplot2::ylab('Relative Intensity') +
     ggplot2::xlab(xlab_text) +
     ZZWTheme() +
@@ -180,6 +180,140 @@ plot_isotope_pairs <- function(signif_feature_unlabeled,
   return(temp_plot)
 
 }
+
+
+
+
+#
+# plot_isotope_pairs <- function(signif_feature_unlabeled,
+#                                signif_feature_labeled,
+#                                pair_table,
+#                                eic_data_unlabel,
+#                                eic_data_label,
+#                                col_abundance = 'avg_abundance_case',
+#                                rt_unit = c('minutes', 'seconds'),
+#                                mz_tol = 10) {
+#
+#   match.arg(rt_unit)
+#   # browser()
+#
+#   # point table
+#   # temp_labeled <- signif_feature_unlabeled %>%
+#   #   dplyr::select(id, mz, rt, get(average_abundance), q_value, fold_change) %>%
+#   #   dplyr::mutate(group_label = 'Unlabeled',
+#   #                 delta_mz = 0.1)
+#   #
+#   # temp_unlabeled <- signif_feature_labeled %>%
+#   #   dplyr::select(id, mz, rt, average_abundance, q_value, fold_change) %>%
+#   #   dplyr::mutate(group_label = 'Labeled',
+#   #                 delta_mz = -0.1)
+#
+#   temp_labeled <- signif_feature_unlabeled %>%
+#     dplyr::select(id, mz, rt, col_abundance, q_values, fold_change) %>%
+#     # dplyr::rename('average_abundance' = col_abundance) %>%
+#     dplyr::mutate(group_label = 'Unlabeled',
+#                   delta_mz = 0.1)
+#
+#   temp_unlabeled <- signif_feature_labeled %>%
+#     dplyr::select(id, mz, rt, col_abundance, q_values, fold_change) %>%
+#     dplyr::mutate(group_label = 'Labeled',
+#                   delta_mz = -0.1)
+#
+#   point_table <- temp_unlabeled %>%
+#     dplyr::bind_rows(temp_labeled)
+#
+#   # pair table
+#   pair_table <- pair_table %>%
+#     dplyr::mutate(avg_mz = (unlabeled_mz + labeled_mz)/2) %>%
+#     dplyr::mutate(mz_adj1 = unlabeled_mz - avg_mz,
+#                   mz_adj2 = labeled_mz - avg_mz)
+#
+#   # replace delta_mz in point table
+#   temp_idx1 <- match(pair_table$unlabeled_feature_id, point_table$id)
+#   temp_idx2 <- match(pair_table$labelded_feature_id, point_table$id)
+#
+#   point_table$delta_mz[temp_idx1] <- pair_table$mz_adj1
+#   point_table$delta_mz[temp_idx2] <- pair_table$mz_adj2
+#
+#   # segment table1
+#   segment_table <- pair_table %>%
+#     dplyr::mutate(rt_mean = (unlabeled_rt + labeled_rt)/2) %>%
+#     dplyr::mutate(rt_adj = rt_mean - 0.1) %>%
+#     dplyr::select(mz_adj1, mz_adj2, rt_mean, rt_adj, mass_shift_label)
+#
+#   # rescale EICs
+#   temp_scale <- round(pair_table$labeled_mz - pair_table$unlabeled_mz) %>% max()
+#   eic_data_unlabel <- eic_data_unlabel %>%
+#     dplyr::mutate(int_adj = int/max(int)*(-temp_scale/2) - 0.1)
+#   eic_data_label <- eic_data_label %>%
+#     dplyr::mutate(int_adj = int/max(int)*(temp_scale/2) + 0.1)
+#
+#   if (rt_unit == 'seconds') {
+#     eic_data_unlabel$rt <- eic_data_unlabel$rt*60
+#     eic_data_label$rt <- eic_data_label$rt*60
+#     xlab_text <- 'RT (seconds)'
+#   } else {
+#     eic_data_unlabel$rt <- eic_data_unlabel$rt
+#     eic_data_label$rt <- eic_data_label$rt
+#     xlab_text <- 'RT (minutes)'
+#   }
+#
+#
+#   temp_plot <- ggplot2::ggplot(point_table) +
+#     ggplot2:: geom_line(data = eic_data_label,
+#                         ggplot2::aes(x = rt, y = int_adj, color = precursor_mz),
+#                         alpha = 0.6) +
+#     ggplot2::geom_line(data = eic_data_unlabel,
+#                        ggplot2::aes(x = rt, y = int_adj, color = precursor_mz), alpha = 0.6) +
+#     ggplot2::geom_segment(data = segment_table,
+#                           ggplot2::aes(x = rt_adj,
+#                                        y = mz_adj1,
+#                                        xend = rt_adj,
+#                                        yend = mz_adj2),
+#                           color = 'gray') +
+#     ggplot2::geom_segment(data = segment_table,
+#                           ggplot2::aes(x = rt_adj,
+#                                        y = mz_adj1,
+#                                        xend = rt_mean,
+#                                        yend = mz_adj1),
+#                           color = 'gray') +
+#     ggplot2::geom_segment(data = segment_table,
+#                           ggplot2::aes(x = rt_adj,
+#                                        y = mz_adj2,
+#                                        xend = rt_mean,
+#                                        yend = mz_adj2),
+#                           color = 'gray') +
+#     ggplot2::geom_point(ggplot2::aes(x = rt,
+#                                      y = delta_mz,
+#                                      fill = group_label,
+#                                      size = fold_change),
+#                         alpha = 0.5, shape = 21) +
+#     ggrepel::geom_text_repel(
+#       data = subset(point_table, abs(delta_mz) > 0.5 ),
+#       ggplot2::aes(x = rt, y = delta_mz, label = id),
+#       position = position_jitter(seed = 1)
+#     ) +
+#     ggplot2::geom_hline(yintercept = 0) +
+#     ggplot2::scale_fill_manual(values = c('Labeled' = 'red',
+#                                           'Unlabeled' = 'black'),
+#                                label = c('Labeled' = '13C',
+#                                          'Unlabeled' = '12C'),
+#                                name = 'Group') +
+#     ggplot2::scale_colour_discrete(name = 'Precursor m/z') +
+#     ggplot2::scale_size_continuous(range = c(1, 10),
+#                                    name = paste0('Fold_change (Mutant/WT)')) +
+#     ggplot2::scale_y_continuous(breaks = c((seq(-floor(temp_scale/2), -1, by = 1)) - 0.1,
+#                                            0,
+#                                            (seq(1, floor(temp_scale/2), by = 1)) + 0.1),
+#                                 labels = seq(-floor(temp_scale/2), floor(temp_scale/2), by = 1)) +
+#     ggplot2::ylab('Relative Intensity') +
+#     ggplot2::xlab(xlab_text) +
+#     ZZWTheme() +
+#     ggplot2::theme(legend.position = 'right')
+#
+#   return(temp_plot)
+#
+# }
 
 
 ################################################################################
@@ -237,6 +371,8 @@ extract_eic_data <- function(path,
 
   return(eic_data_export)
 }
+
+
 
 
 
@@ -364,8 +500,8 @@ plot_selected_pair <- function(signif_feature_unlabeled,
                          'Fold change: ', round(temp_pair_table$fold_change_label), '\n',
                          'q-value: ', format(signif(temp_pair_table$q_value_label, 2), scientific = TRUE))
 
-    text_title <- paste0('Isotope pair: ', temp_feature_unlabel, ' - ', temp_feature_label, '\n',
-                         '#C ', temp_pair_table$mass_shift_label[i], '\n')
+    text_title <- paste0('Isotope pair: ', temp_feature_unlabel, ' - ', temp_feature_label,
+                         '#C ', temp_pair_table$mass_shift_label, '\n')
 
     temp_plot <- ggplot2::ggplot(temp_point_table) +
       ggplot2::geom_line(data = temp_eic_data_label,
@@ -397,7 +533,7 @@ plot_selected_pair <- function(signif_feature_unlabeled,
       ggplot2::ylab('Relative Intensity') +
       ggplot2::geom_hline(yintercept = 0) +
       ggplot2::xlab(xlab_text) +
-      ggtitle(text_title) +
+      ggplot2::ggtitle(text_title) +
       ZZWTheme() +
       ggplot2::theme(legend.position = 'right')
 

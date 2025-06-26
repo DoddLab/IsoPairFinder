@@ -41,8 +41,26 @@ modify_xcms_table <- function(table_xcms,
   # browser()
   cat(crayon::bgBlue('Modifying xcms table...'), '\n')
   table_xcms <- readr::read_csv(table_xcms, show_col_types = FALSE)
-  table_camera <- readxl::read_xlsx(table_camera)
-  sample_info <- readxl::read_xlsx(table_sample_info)
+
+  # According to file table to read the table_camera using read_xlsx or read_csv
+  if (stringr::str_detect(table_camera, '\\.xlsx')) {
+    # table_camera <- readxl::read_xlsx(file.path(path, table_camera))
+    table_camera <- readxl::read_xlsx(table_camera)
+  } else if (stringr::str_detect(table_camera, '\\.csv')) {
+    # table_camera <- readr::read_csv(file.path(path, table_camera), show_col_types = FALSE)
+    table_camera <- readr::read_csv(table_camera, show_col_types = FALSE)
+  } else {
+    stop('The table_camera should be a csv or xlsx file')
+  }
+
+  # According to file table to read the table using read_xlsx or read_csv
+  if (stringr::str_detect(table_sample_info, '\\.xlsx')) {
+    sample_info <- readxl::read_xlsx(table_sample_info)
+  } else if (stringr::str_detect(table_sample_info, '\\.csv')) {
+    sample_info <- readr::read_csv(table_sample_info, show_col_types = FALSE)
+  } else {
+    stop('The sample_info should be a csv or xlsx file')
+  }
 
   temp_sample_id <- colnames(table_xcms)[colnames(table_xcms) %in% sample_info$sample_id]
   # select columns name, mzmed, rtmed, and columns after maxint
@@ -154,7 +172,14 @@ modify_msdial_table <- function(
     raw_table <- readr::read_tsv(table_msdial)
   }
 
-  sample_info <- readxl::read_xlsx(table_sample_info)
+  # According to file table to read the sample_info table using read_xlsx or read_csv
+  if (stringr::str_detect(table_sample_info, '\\.xlsx')) {
+    sample_info <- readxl::read_xlsx(table_sample_info)
+  } else if (stringr::str_detect(table_sample_info, '\\.csv')) {
+    sample_info <- readr::read_csv(table_sample_info, show_col_types = FALSE)
+  } else {
+    stop('The sample_info should be a csv or xlsx file')
+  }
 
   temp_col_name <- raw_table %>% dplyr::slice(4) %>% as.character()
   temp_sample_id <- temp_col_name[temp_col_name %in% sample_info$sample_id]
@@ -251,7 +276,14 @@ modify_mzmine_table <- function(
     raw_table <- readr::read_tsv(table_mzmine, show_col_types = FALSE)
   }
 
-  sample_info <- readxl::read_xlsx(table_sample_info)
+  # According to file table to read the sample_info table using read_xlsx or read_csv
+  if (stringr::str_detect(table_sample_info, '\\.xlsx')) {
+    sample_info <- readxl::read_xlsx(table_sample_info)
+  } else if (stringr::str_detect(table_sample_info, '\\.csv')) {
+    sample_info <- readr::read_csv(table_sample_info, show_col_types = FALSE)
+  } else {
+    stop('The sample_info should be a csv or xlsx file')
+  }
 
   temp_col_name <- raw_table %>% colnames()
 
@@ -336,6 +368,7 @@ check_parameters <- function(peak_table_unlabel,
                              peak_table_label,
                              sample_info,
                              path = '.',
+                             raw_data_folder = NULL,
                              control_group = c("WT"),
                              case_group = c('hyuA')){
   cat(crayon::bgBlue('Checking parameters...'), '\n')
@@ -363,6 +396,52 @@ check_parameters <- function(peak_table_unlabel,
   }
   if (!(sample_info %in% file_list)) {
     stop(crayon::red('The sample_info is not available in the path'))
+  }
+
+  # check availability of raw data
+  if (length(raw_data_folder) == 0) {
+    raw_data_path_12C <- paste0(case_group, '_12C')
+    raw_data_path_13C <- paste0(case_group, '_13C')
+  } else {
+    raw_data_path_12C <- raw_data_folder[[paste0(case_group, '_12C')]]
+    raw_data_path_13C <- raw_data_folder[[paste0(case_group, '_13C')]]
+  }
+
+  if (!(raw_data_path_12C %in% file_list) | !(raw_data_path_13C %in% file_list)) {
+    stop(crayon::red('The raw data folder is not available in the path\n',
+                     paste(c(raw_data_path_12C, raw_data_path_13C), collapse = ', ')))
+  }
+  # check raw data format belong to mzML/mzXML
+  raw_data_files_12C <- list.files(file.path(path, raw_data_path_12C))
+  raw_data_files_13C <- list.files(file.path(path, raw_data_path_13C))
+  if (length(raw_data_files_12C) == 0 | length(raw_data_files_13C) == 0) {
+    stop(crayon::red('The raw data folder is empty\n',
+                     paste(c(raw_data_path_12C, raw_data_path_13C), collapse = ', ')))
+  }
+  if (!all(stringr::str_detect(raw_data_files_12C, '\\.mzML$|\\.mzXML$')) |
+      !all(stringr::str_detect(raw_data_files_13C, '\\.mzML$|\\.mzXML$'))) {
+    stop(crayon::red('The raw data files should be in mzML/mzXML/mgf format\n',
+                     paste(c(raw_data_files_12C[!stringr::str_detect(raw_data_files_12C, '\\.mzML$|\\.mzXML$')],
+                             raw_data_files_13C[!stringr::str_detect(raw_data_files_13C, '\\.mzML$|\\.mzXML$')]),
+                           collapse = ', ')))
+  }
+
+
+  # check availability of ms2 data
+  if (!("ms2" %in% file_list)) {
+    stop(crayon::red('The ms2 data folder is not available in the path\n',
+                     'Please provide the ms2 data folder with name "ms2"'))
+  }
+
+  # check ms2 format belong to mzML/mzXML/mgf
+  ms2_files <- list.files(file.path(path, 'ms2'))
+  if (length(ms2_files) == 0) {
+    stop(crayon::red('The ms2 data folder is empty\n',
+                     'Please provide the ms2 data folder with name "ms2"'))
+  }
+  if (!all(stringr::str_detect(ms2_files, '\\.mzML$|\\.mzXML$|\\.mgf$'))) {
+    stop(crayon::red('The ms2 data files should be in mzML/mzXML/mgf format\n',
+                     paste(ms2_files[!stringr::str_detect(ms2_files, '\\.mzML$|\\.mzXML$|\\.mgf$')], collapse = ', ')))
   }
 
 
@@ -440,6 +519,8 @@ check_parameters <- function(peak_table_unlabel,
   # print checked results as a table:
     # peak_table_unlabel and peak_table_label: number of features (rows), number of samples (sample names)
     # sample_info: number of samples (sample names), number of groups, number of tracer groups
+    # raw_data_folder: number of raw data files in each folder, file format
+    # ms2: number of ms2 files, file format
 
   # print a split line '------------"
 
@@ -457,7 +538,18 @@ check_parameters <- function(peak_table_unlabel,
       paste(unique(sample_info$group), collapse = ', '), '\n',
       crayon::yellow(length(unique(sample_info$tracer_group))), 'tracer groups:',
       paste(unique(sample_info$tracer_group), collapse = ', '), '\n')
-
+  cat(crayon::blue('Raw data folders:\n'),
+      crayon::yellow(raw_data_path_12C), ':',
+      length(list.files(file.path(path, raw_data_path_12C))), 'files with format:',
+      paste(unique(stringr::str_extract(raw_data_files_12C, '\\.mzML$|\\.mzXML$')), collapse = ', '), '\n',
+      crayon::yellow(raw_data_path_13C), ':',
+      length(list.files(file.path(path, raw_data_path_13C))), 'files with format:',
+      paste(unique(stringr::str_extract(raw_data_files_13C, '\\.mzML$|\\.mzXML$')), collapse = ', '), '\n')
+  cat(crayon::blue('MS2 data folder:\n'),
+      crayon::yellow('ms2'), ':',
+      length(ms2_files), 'files with format:',
+      paste(unique(stringr::str_extract(ms2_files, '\\.mzML$|\\.mzXML$|\\.mgf$')), collapse = ', '), '\n')
+  cat(crayon::silver('----------------------------\n'))
 
 
 

@@ -87,9 +87,18 @@ recognize_rela_peak <- function(peak_table,
 
   cat('\n'); cat('------------------------------------------------------\n')
   cat('Retrieve ms2 ...\n')
+
+  # retrieve the ms2_type in the ms2 folder
+  temp_ms2_file <- list.files(file.path(path_dir, 'ms2'))
+  if (length(temp_ms2_file) == 0) {
+    stop('No ms2 data found in the specified path. Please check the path_dir and ms2 folder.')
+  }
+  ms2_type <- stringr::str_extract(temp_ms2_file[1], 'mzML|mzXML|mgf')
+  rm(temp_ms2_file)
+
   raw_ms2 <- retrieve_ms2_data(peak_table = peak_table,
                                path = path_dir,
-                               ms2_type = 'mzML',
+                               ms2_type = ms2_type,
                                is_include_precursor = TRUE,
                                int_ms2_min_abs = 50,
                                int_ms2_min_relative = 0.01,
@@ -1644,7 +1653,7 @@ setGeneric(name = 'annotateISF',
 
 retrieve_ms2_data <- function(peak_table,
                               path = '.',
-                              ms2_type = c('mzML', 'mzXML'),
+                              ms2_type = c('mzML', 'mzXML', 'mgf'),
                               is_include_precursor = TRUE,
                               int_ms2_min_abs = 50,
                               int_ms2_min_relative = 0.01,
@@ -1677,22 +1686,25 @@ retrieve_ms2_data <- function(peak_table,
   rm(variable_data, expression_profile_data);gc()
 
   ms2_file <- list.files(file.path(path, 'ms2'), pattern = ms2_type, recursive = TRUE)
-  ms2_data <- DoddLabMetID::read_ms2(file.path(path, 'ms2', ms2_file), ms2_type = ms2_type)
 
-  ms2_data <- DoddLabMetID::integrate_ms2(ms2_data = ms2_data,
-                                          ms2_file = file.path(path, 'ms2', ms2_file),
-                                          ms2_type = ms2_type,
-                                          is_include_precursor = TRUE,
-                                          is_deisotope = FALSE,
-                                          int_ms2_min_abs = int_ms2_min_abs,
-                                          int_ms2_min_relative = int_ms2_min_relative)
+  # DoddLabMetID::
+  ms2_data <- read_ms2(file.path(path, 'ms2', ms2_file), ms2_type = ms2_type)
 
+  # DoddLabMetID::
+  ms2_data <- integrate_ms2(ms2_data = ms2_data,
+                            ms2_file = file.path(path, 'ms2', ms2_file),
+                            ms2_type = ms2_type,
+                            is_include_precursor = TRUE,
+                            is_deisotope = FALSE,
+                            int_ms2_min_abs = int_ms2_min_abs,
+                            int_ms2_min_relative = int_ms2_min_relative)
 
-  ms2_data_combined <- DoddLabMetID::combine_ms1_ms2(ms1_data = ms1_data,
-                                                     ms2_data = ms2_data,
-                                                     ms2_type = ms2_type,
-                                                     mz_tol_combine_ms1_ms2 = mz_tol_combine_ms1_ms2,
-                                                     rt_tol_combine_ms1_ms2 = rt_tol_combine_ms1_ms2)
+  # DoddLabMetID::
+  ms2_data_combined <- combine_ms1_ms2(ms1_data = ms1_data,
+                                       ms2_data = ms2_data,
+                                       ms2_type = ms2_type,
+                                       mz_tol_combine_ms1_ms2 = mz_tol_combine_ms1_ms2,
+                                       rt_tol_combine_ms1_ms2 = rt_tol_combine_ms1_ms2)
 
   return(ms2_data_combined)
 }

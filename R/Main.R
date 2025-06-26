@@ -9,6 +9,7 @@
 #' @param polarity ionization polarity, either 'positive' or 'negative'. Default: 'positive'
 #' @param control_group label of control groups. e.g. c("WT")
 #' @param case_group label of case groups. e.g. c('hyuA')
+#' @param raw_data_folder a list of raw data folder names, which should be consist with the group name in sample info, e.g. list('hyuA_12C' = 'hyuA_12C', 'hyuA_13C' = 'hyuA_13C'). Default: NULL. The raw data should be in mzML format.
 #' @param mz_tol Default: 10 ppm
 #' @param rt_tol Default: 0.05 min
 #' @param p_value_cutoff Default: 0.05
@@ -94,13 +95,41 @@ find_intemidates <- function(peak_table_unlabel,
     case_group = case_group)
 
 
+  # save the parameters
+  list_para <- list(
+    'package_verison' = packageVersion('IsoPairFinder'),
+    # assign parameter from parameter set
+    'peak_table_unlabel' = peak_table_unlabel,
+    'peak_table_label' = peak_table_label,
+    'sample_info' = sample_info,
+    'path' = path,
+    'polarity' = polarity,
+    'control_group' = control_group,
+    'case_group' = case_group,
+    'raw_data_folder' = ifelse(is.null(raw_data_folder), '', paste(raw_data_folder, collapse = ';')),
+    'mz_tol' = paste(mz_tol, collapse = ';'),
+    'rt_tol' = paste(rt_tol, collapse = ';'),
+    'p_value_cutoff' = paste(p_value_cutoff, collapse = ';'),
+    'p_adjust' = p_adjust,
+    'fold_change_cutoff' = fold_change_cutoff,
+    'is_recognize_adducts' = is_recognize_adducts
+  ) %>%
+    tibble::as_tibble() %>%
+    dplyr::mutate_all(as.character) %>%
+    tidyr::pivot_longer(cols = dplyr::everything(), names_to = 'para')
+
+  path_output <- file.path(path, '00_tracer_result')
+  dir.create(file.path(path_output), showWarnings = FALSE, recursive = TRUE)
+  readr::write_tsv(list_para, path = file.path(path_output, 'para_list.txt'), append = FALSE)
+
+  cat(crayon::bgBlue('Start processing...'), '\n')
   message(crayon::blue('1. Reading the peak tables... \n'))
   raw_data_unlabel <- readr::read_csv(file.path(path, peak_table_unlabel), show_col_types = FALSE)
   raw_data_label <- readr::read_csv(file.path(path, peak_table_label), show_col_types = FALSE)
   if (stringr::str_detect(sample_info, '\\.xlsx$')) {
     sample_info <- readxl::read_xlsx(file.path(path, sample_info))
   } else {
-    sample_info <- readr::read_csv(file.path(path, sample_info))
+    sample_info <- readr::read_csv(file.path(path, sample_info), show_col_types = FALSE)
   }
 
   sample_id_control_12C <- sample_info %>%
@@ -255,6 +284,7 @@ find_intemidates <- function(peak_table_unlabel,
     temp_num1 <- nrow(feature_sig_unlabel)
     temp_num2 <- length(unique(result_peak_recognization_unlabel$base_peak))
 
+    cat('\n')
     message(crayon::green(temp_num1 - temp_num2, 'features are merged through recognizing adducts/neutral_loss/in_source_fragments\n'))
     message(crayon::green(temp_num2, 'unlabeled features used to extract pairs','\n'))
     rm(temp_num1, temp_num2);gc()
@@ -336,6 +366,11 @@ find_intemidates <- function(peak_table_unlabel,
 
 
   cat('\n')
+  if (nrow(pair_table) == 0) {
+    message(crayon::red('No pairs are found! Skip the plots\n'))
+    return(NULL)
+  }
+
   message(crayon::blue('4. Plot these pairs ... \n'))
   message(crayon::blue('4.1 Extract EICs for pairs ...\n'))
 
@@ -343,8 +378,9 @@ find_intemidates <- function(peak_table_unlabel,
     raw_data_path_12C <- paste0(case_group, '_12C')
     raw_data_path_13C <- paste0(case_group, '_13C')
   } else {
+    # need to be fixed
     raw_data_path_12C <- raw_data_folder[[paste0(case_group, '_12C')]]
-    raw_data_path_13C <- raw_data_folder[[paste0(case_group, '_12C')]]
+    raw_data_path_13C <- raw_data_folder[[paste0(case_group, '_13C')]]
   }
 
   if (raw_data_path_12C %in% list.files(path)) {
@@ -355,7 +391,7 @@ find_intemidates <- function(peak_table_unlabel,
                                          mz_tol = mz_tol)
   } else {
     eic_data_unlabel <- extract_eic_data(path = path,
-                                         files_pattern = paste0(raw_data_path_12C, '.+\\.mzML'),
+                                         files_pattern = paste0(raw_data_path_12C, '.+\\.mzML|.+\\.mzXML'),
                                          mz_list = pair_table$unlabeled_mz,
                                          mz_tol = mz_tol)
   }
@@ -368,7 +404,7 @@ find_intemidates <- function(peak_table_unlabel,
                                        mz_tol = mz_tol)
   } else {
     eic_data_label <- extract_eic_data(path = path,
-                                       files_pattern = paste0(raw_data_path_13C, '.+\\.mzML'),
+                                       files_pattern = paste0(raw_data_path_13C, '.+\\.mzML|.+\\.mzXML'),
                                        mz_list = pair_table$labeled_mz,
                                        mz_tol = mz_tol)
   }
@@ -377,6 +413,7 @@ find_intemidates <- function(peak_table_unlabel,
   cat('\n')
   message(crayon::blue('4.2 Plot pairs\n'))
 
+  # browser()
   temp_plot <- plot_isotope_pairs(signif_feature_unlabeled = feature_sig_unlabel,
                                   signif_feature_labeled = feature_sig_label,
                                   pair_table = pair_table,
@@ -388,7 +425,7 @@ find_intemidates <- function(peak_table_unlabel,
   dir.create(file.path(path, '00_tracer_result'), showWarnings = FALSE, recursive = TRUE)
   ggplot2::ggsave(plot = temp_plot,
                   filename = file.path(path, '00_tracer_result', 'isotope_pair_plot_overview.pdf'),
-                  width = 8, height = 6)
+                  width = 15, height = 9)
 
   temp_plot_list <- plot_selected_pair(signif_feature_unlabeled = feature_sig_unlabel,
                                        signif_feature_labeled = feature_sig_label,
@@ -464,7 +501,7 @@ find_pair_feature <- function(target_mz,
     lapply(function(x){
       temp_result <- rcdk::get.formula(x)
       temp_result@isotopes %>%
-        as_tibble() %>%
+        tibble::as_tibble() %>%
         dplyr::filter(isoto == 'C') %>%
         dplyr::pull(number) %>%
         as.numeric()
@@ -484,7 +521,8 @@ find_pair_feature <- function(target_mz,
     dplyr::select(mz, rt) %>%
     as.data.frame()
 
-  matched_result <- masstools::mz_rt_match(
+  # masstools
+  matched_result <- mz_rt_match(
     possible_table,
     temp_label_table,
     mz.tol = mz_tol,
@@ -548,17 +586,21 @@ find_pair_feature <- function(target_mz,
 # startup massage --------------------------------------------------------------
 .onAttach <- function(libname, pkgname){
   packageStartupMessage("
-Version 0.1.1
+Version 0.1.3
 -------------
 Authors: Zhiwei Zhou
 Maintainer: Zhiwei Zhou
 
-Updates (20250619)
+Updates (20250626)
 -------------
-o Modify the initial version from Nature Microbiology paper (DoddLabTracer)
-o Adjust the structure of the package
-o Support the xcms, msdial, and mzmine workflows
-o Add README and initial commit
+- Export parameters
+- Update the README and NEWS
+- Update pair_isotope_pairs_overview
+- Update dependencies
+- Add the function module of FunctionOthers to decrease necessary depends
+- Check the raw data and ms2 data availabilty
+- Support the mfg/mzXML ms2 data
+
 
 ")
 }

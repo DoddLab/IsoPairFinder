@@ -3,13 +3,12 @@
 
 [![](https://www.r-pkg.org/badges/version/masstools?color=green)](https://cran.r-project.org/package=IsoPairFinder)
 [![](https://img.shields.io/github/languages/code-size/DoddLab/IsoPairFinder)](https://github.com/DoddLab/IsoPairFinder)
-[![](https://img.shields.io/github/contributors/JustinZZW/ZZWtool)](https://github.com/DoddLab/IsoPairFinder)
 
 <br><br>
 
 
 ## Overview
-**IsoPairFinder** is an R package designed to identify potential intermediates from Stable Isotope Tracing (SIT) metabolomics data for accelerating the elucidation of the metabolism pathway in the gut microbes. It provides the first end-to-end workflow serving this objective, including (1) identifying differential ion signals introduced by the gene mutation; (2) merging of the redundant LC-MS signals (isotopes, adducts, and in-source fragments); (3) pairing 12C/13C features to determine potential intermediates. It is also compatible with different metabolomics data processing tools. The **Detailed Tutorial** could be found [here](xxx).
+**IsoPairFinder** is an R package designed to identify potential intermediates from Stable Isotope Tracing (SIT) metabolomics data for accelerating the elucidation of the metabolism pathway in the gut microbes. It provides the first end-to-end workflow serving this objective, including (1) identifying differential ion signals introduced by the gene mutation; (2) merging of the redundant LC-MS signals (isotopes, adducts, and in-source fragments); (3) pairing 12C/13C features to determine potential intermediates. It is also compatible with different metabolomics data processing tools. The **Detailed Tutorial** could be found [here](https://doddlab.github.io/IsoPairFinder_Tutorials/).
 
 
 
@@ -38,7 +37,7 @@ devtools::install_github("DoddLab/DoddLabTracer")
 ```
 
 ## Usage
-This is a basic example of HyuA mutants to get you started. The Study design could be found [here](xxx).  
+This is a basic example of HyuA mutants to get you started. The Study design could be found [here](https://doddlab.github.io/IsoPairFinder_Tutorials/caseStudy.html).  
 
 The Demo data could be downloaded [here](https://github.com/DoddLab/IsoPairFinder_demo_data). Briefly, the files contains:
 
@@ -77,7 +76,7 @@ find_intemidates(peak_table_unlabel = 'peak_table_C12.csv',
 For more detailed examples and vignettes, please refer to the package documentation:
 ```r
 # View all vignettes
-browseVignettes("IonPairFinder")
+browseVignettes("IsoPairFinder")
 
 ```
 
@@ -85,7 +84,7 @@ browseVignettes("IonPairFinder")
 ## Citation
 If you use `IsoPairFinder` in your research, please consider citing it. 
 
-- Zhiwei Zhou, IsoPairFinder: An R package for identifying potential intermediates from Stable Isotope Tracing metabolomics data, In preparing
+- Zhiwei Zhou, Dylan Dodd*, IsoPairFinder: An R package for identifying potential intermediates from Stable Isotope Tracing metabolomics data, In preparation, 2025
 
 You can also find citation information by running:
 ```r

@@ -9,3 +9,12 @@
 
 # IsoPairFinder 0.1.2 (20250625)
 - Add 'isotope_pair_list' plots export
+
+# IsoPairFinder 0.1.3 (20250626)
+- Export parameters
+- Update the README and NEWS
+- Update pair_isotope_pairs_overview
+- Update dependencies
+- Add the function module of FunctionOthers to decrease necessary depends
+- Check the raw data and ms2 data availabilty
+- Support the mfg/mzXML ms2 data
