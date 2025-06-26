@@ -9,6 +9,7 @@ check_parameters(
   peak_table_label,
   sample_info,
   path = ".",
+  raw_data_folder = NULL,
   control_group = c("WT"),
   case_group = c("hyuA")
 )

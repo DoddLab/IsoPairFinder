@@ -36,6 +36,8 @@ find_intemidates(
 
 \item{case_group}{label of case groups. e.g. c('hyuA')}
 
+\item{raw_data_folder}{a list of raw data folder names, which should be consist with the group name in sample info, e.g. list('hyuA_12C' = 'hyuA_12C', 'hyuA_13C' = 'hyuA_13C'). Default: NULL. The raw data should be in mzML format.}
+
 \item{mz_tol}{Default: 10 ppm}
 
 \item{rt_tol}{Default: 0.05 min}

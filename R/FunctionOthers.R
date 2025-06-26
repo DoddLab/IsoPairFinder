@@ -31,7 +31,7 @@
 #' @author Zhiwei Zhou
 #' @param ms2_file MS/MS file names
 #' @param ms2_type 'mgf', 'cef', 'msp', 'mzXML', 'mzML'
-#' @export
+# #' @export
 
 #
 # path <- '~/Project/00_IBD_project/Data/20230327_raw_data_processing_test/DemoData_DoddLabMetabolomics/ms2/'
@@ -124,7 +124,7 @@ setGeneric(name = 'read_ms2',
 #' @title readMGF
 #' @author Zhiwei Zhou
 #' @param file the name of mgf file
-#' @export
+# #' @export
 
 # path <- 'H:/00_projects/03_MetDNA2/00_data/20200922_metdna2_development/pos_201007_metdna2'
 # temp_files <- dir(path) %>% stringr::str_detect('\\.mgf') %>% dir(path)[.]
@@ -379,7 +379,7 @@ setGeneric('ListDB', function(file) {
 #' @description  Read a CEF file and return a list of spectra for all feature
 #'  with feature information
 #' @param file path of the CEF file
-#' @export
+# #' @export
 
 # file <- 'H:/00_projects/03_MetDNA2/00_data/20201012_metdna2_developmemt/CEF/mice_liver_pos/QC_01_MA-d3-c3_SR.cef'
 # test <- readCEF(file)
@@ -471,7 +471,7 @@ setGeneric('ListCEF',
 #' @title readMzXML
 #' @author Zhiwei Zhou, Xiaotao Shen
 #' @param file
-#' @export
+# #' @export
 # file <- 'H:/00_projects/03_MetDNA2/00_data/20201012_metdna2_developmemt/mzXML/POS/Sample2-W30 POS06-POS-W30 POS06.mzXML'
 # test <- readMzXML(file)
 
@@ -516,7 +516,7 @@ setGeneric('readMzXML',
 #' @title readMzML
 #' @author Zhiwei Zhou, Xiaotao Shen
 #' @param file
-#' @export
+# #' @export
 # test <- readMzXML(file)
 
 # file <- '~/Project/00_IBD_project/Data/20230327_raw_data_processing_test/DemoData_DoddLabMetabolomics/ms2/B011_PoolQC-DDA-r001.mzML'
@@ -569,7 +569,7 @@ setGeneric('readMzML',
 #' @importFrom magrittr %>%
 #' @importFrom crayon blue red yellow green bgRed
 #' @importFrom stringr str_detect str_extract
-#' @export
+# #' @export
 #' @examples
 #' \dontrun{
 #' file <- '~/Project/00_IBD_project/Data/20230428_Zhiwei_StanfordPool_MS2/mzxml_haoqing_data/Haoqing_MS2_data/MS2_lib_mzXML/Stanford_HILIC_pos/SU-A01_1.mzXML'
@@ -751,7 +751,7 @@ readMzML2 <- function(file,
 #' @param ppm_precursor_filter the m/z tolerance to rexmove precursor ion in spectra. Default: 20
 #' @param extract_ms2_file extract ms2 file. Default: NULL
 #' @param mz_range_ms2 the range of ms2 data.
-#' @export
+# #' @export
 
 # path <- '~/Project/00_IBD_project/Data/20230327_raw_data_processing_test/DemoData_mgf/'
 # temp_files <- dir(path) %>% stringr::str_detect('\\.mgf') %>% dir(path)[.]
@@ -892,7 +892,7 @@ setGeneric(name = 'integrate_ms2',
 #' @param int_ms2_min_abs the minmium intensity of ms2 fragment_ Default: 10
 #' @param int_ms2_min_relative the minmium relative of ms2 fragment_ Default: 0.03 ((3%))
 #' @param ppm_precursor_filter the m/z tolerance to remove precursor ion in spectra_ Default: 20
-#' @export
+# #' @export
 
 setGeneric(name = 'purifyMs2',
            def = function(
@@ -1114,7 +1114,7 @@ setGeneric(name = 'removeRingEffect',
 #' @param rt_tol_combine_ms1_ms2 RT tol for ms1 and ms2 data matching.
 #' @param ms2_type The type of MS2 file, default is mzXML.
 #' @return Return ms1 and ms2 data.
-#' @export
+# #' @export
 
 
 # load('~/Project/00_IBD_project/Data/20230327_raw_data_processing_test/DemoData/01_metabolite_annotation_dodd_mz_rt_ms2/00_intermediate_data/ms1_data')
@@ -1292,7 +1292,7 @@ setGeneric(name = 'split_ms2',
 #' @author Zhiwei Zhou
 #' @param obj_class a pecAnnotationClass object
 #' @param ms2
-#' @export
+# #' @export
 
 setGeneric(name = "add_has_ms2_to_SpecAnnotationClass",
            def = function(obj_class, ms2){
@@ -1317,7 +1317,7 @@ setGeneric(name = "add_has_ms2_to_SpecAnnotationClass",
 #' @author Zhiwei Zhou
 #' @param obj_class a pecAnnotationClass object
 #' @param ms2
-#' @export
+# #' @export
 setGeneric(name = "add_ms2_purifty_to_SpecAnnotationClass",
            def = function(obj_class, ms2_data_combined){
 

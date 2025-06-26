@@ -1,0 +1,71 @@
+---
+title: "Quick Start of IsoPairFinder"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to My Cool Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Installation
+To install the **IsoPairFinder** package, you can use the following command in R:
+```{r, eval=FALSE}
+# intall public packages
+if (!require(devtools)){
+    install.packages("devtools")
+}
+
+if (!require(BiocManager)){
+    install.packages("BiocManager")
+}
+
+# Required packages
+required_pkgs <- c("dplyr","tidyr","readr", "stringr", "tibble", "purrr",
+"ggplot2", "igraph", "pbapply", "Rdisop", "randomForest", "pryr", "magrittr", "rmarkdown", "caret")
+BiocManager::install(required_pkgs)
+devtools::install_github("ZhuMetLab/SpectraTools")
+devtools::install_github("tidymass/masstools")
+
+# install.packages("IsoPairFinder")
+devtools::install_github("DoddLab/IsoPairFinder")
+```
+
+## Demo data
+The demo data belong to the [uric acid catabolism pathway study](https://www.biorxiv.org/content/10.1101/2025.04.24.650524v1). Briefly, we cultured wild-type and mutant strains (hyuA mutant in the demo data) of C. sporogenes in the presence of either unlabeled uric acid or its [13C5]-labeled isotopolog (detailed study design can be found [here](https://doddlab.github.io/IsoPairFinder_Tutorials/caseStudy.html)). 
+
+The demo data can be downloaded [here](https://github.com/DoddLab/IsoPairFinder_demo_data). The downloaded data contains below files (Figure 1). Please refer to [Tutortials](https://doddlab.github.io/IsoPairFinder_Tutorials/data_preparation.html) for the detailed requirements of the data format for the step-by-step data preparation. 
+
+![Figure 1. The screenshot of the demo data.](figure1_1.png){width=75% .align-center #fig-figure1-1}
+
+## Run script
+The basic use of IsoPairFinder is simply running the R script as below:
+
+```{r, eval=FALSE}
+
+# run the IsoPairFinder workflow
+library(tidyverse)
+library(IsoPairFinder)
+
+# analysis of HyuA 
+find_intemidates(peak_table_unlabel = 'peak_table_C12.csv',
+                 peak_table_label = 'peak_table_C13.csv',
+                 sample_info = 'sample_info.xlsx',
+                 path = '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_msdial/',
+                 polarity = c('positive', 'negative'),
+                 control_group = c("WT"),
+                 case_group = c('hyuA'),
+                 mz_tol = 10,
+                 rt_tol = 0.05,
+                 p_value_cutoff = 0.05,
+                 p_adjust = TRUE,
+                 fold_change_cutoff = 20,
+                 is_recognize_adducts = TRUE)
+
+```    
+
+Please refer to [Tutorials](https://doddlab.github.io/IsoPairFinder_Tutorials/isoPairFinder_running.html#sec-isoPairFinder-parameters) for the explains of parameters. 
+
+## Output
+After running, a new folder “00_tracer_result” will be created. It contains several files, including “tracer_pair_result.xlsx” and several PDF files. In the tab of the XLSX file, we could find the identified ion pair results between the unlabeled and labeled groups (Figure 2). The detailed explanations of each file can be found in [Tutorials](https://doddlab.github.io/IsoPairFinder_Tutorials/isoPairFinder_running.html).
+
+![Figure 2. Overview of results.](figure1_2.png){width=75% .align-center #fig-figure1-2}
