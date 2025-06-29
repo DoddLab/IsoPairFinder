@@ -29,11 +29,10 @@ if (!require(BiocManager)){
 required_pkgs <- c("dplyr","tidyr","readr", "stringr", "tibble", "purrr",
 "ggplot2", "igraph", "pbapply", "Rdisop", "randomForest", "pryr", "magrittr", "rmarkdown", "caret")
 BiocManager::install(required_pkgs)
-devtools::install_github("ZhuMetLab/SpectraTools")
-devtools::install_github("tidymass/masstools")
+devtools::install_github("JustinZZW/SpectraTools2")
 
-# Install DoddLabTracer
-devtools::install_github("DoddLab/DoddLabTracer")
+# install.packages("IsoPairFinder")
+devtools::install_github("DoddLab/IsoPairFinder")
 ```
 
 ## Usage
