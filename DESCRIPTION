@@ -1,8 +1,8 @@
 Package: IsoPairFinder
 Type: Package
-Title: IsoPairFinder: A Package for Finding Isotopic Pairs in Mass Spectrometry Data
-Version: 0.1.3
-Author: Zhiwei Zhou
+Title: IsoPairFinder: A Package for Finding Isotopic Pairs in Stable Isotope Tracing Metabolomics Data (LC-MS)
+Version: 0.1.4
+Author: Zhiwei Zhou <zhouzw@stanford.edu>
 Maintainer: Zhiwei Zhou <zhouzw@stanford.edu>
 Description: This package is designed to identify potential intermediates from Stable 
     Isotope Tracing (SIT) metabolomics data for accelerating the elucidation of the 
@@ -14,12 +14,22 @@ Imports:
     crayon,
     data.table,
     dplyr,
+    ggrepel,
+    grid,
+    gridExtra,
+    knitr,
     MassToolsMjhelf,
+    mzR,
+    pbapply,
+    purrr,
     RaMS,
     rcdk,
+    Rdisop,
     readr,
     readxl,
+    SpectraTools,
     stringr,
+    tibble,
     tidyr,
     writexl
 Depends: 

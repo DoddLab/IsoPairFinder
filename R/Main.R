@@ -462,7 +462,6 @@ find_intemidates <- function(peak_table_unlabel,
 #' @importFrom dplyr %>%
 #' @importFrom rcdk get.formula
 #' @importFrom MassToolsMjhelf calcMF
-#' @importFrom masstools mz_rt_match
 #' @export
 #' @examples
 
@@ -586,7 +585,7 @@ find_pair_feature <- function(target_mz,
 # startup massage --------------------------------------------------------------
 .onAttach <- function(libname, pkgname){
   packageStartupMessage("
-Version 0.1.3
+Version 0.1.4
 -------------
 Authors: Zhiwei Zhou
 Maintainer: Zhiwei Zhou
@@ -601,6 +600,10 @@ Updates (20250626)
 - Check the raw data and ms2 data availabilty
 - Support the mfg/mzXML ms2 data
 
+Updates (20250630)
+-------------
+- Update the README and NEWS
+- Update the depends
 
 ")
 }

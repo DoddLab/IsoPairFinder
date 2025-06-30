@@ -18,3 +18,7 @@
 - Add the function module of FunctionOthers to decrease necessary depends
 - Check the raw data and ms2 data availabilty
 - Support the mfg/mzXML ms2 data
+
+# IsoPairFinder 0.1.4 (20250630)
+- Update the README and NEWS
+- Update the depends

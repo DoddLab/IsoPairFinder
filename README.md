@@ -27,9 +27,13 @@ if (!require(BiocManager)){
 
 # Required packages
 required_pkgs <- c("dplyr","tidyr","readr", "stringr", "tibble", "purrr",
-"ggplot2", "igraph", "pbapply", "Rdisop", "randomForest", "pryr", "magrittr", "rmarkdown", "caret")
+                   "ggplot2", "igraph", "pbapply", "Rdisop", "randomForest", "pryr", 
+                   "magrittr", "rmarkdown", "caret", "writexl", "ggrepel", "crayon", 
+                   "data.table", "mzR", "Rdisop", "grid", "gridExtra", "RaMS", "knitr",
+                   "rcdk")
 BiocManager::install(required_pkgs)
 devtools::install_github("JustinZZW/SpectraTools2")
+devtools::install_github("DoddLab/MassToolsMjhelf")
 
 # install.packages("IsoPairFinder")
 devtools::install_github("DoddLab/IsoPairFinder")
