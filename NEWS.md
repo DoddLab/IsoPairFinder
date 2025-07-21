@@ -22,3 +22,8 @@
 # IsoPairFinder 0.1.4 (20250630)
 - Update the README and NEWS
 - Update the depends
+
+# IsoPairFinder 1.0.0 (20250720)
+- Refine the digits in the paired table
+- Export the predicted formula in the paired_table
+- Update the README and NEWS

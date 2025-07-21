@@ -7,6 +7,7 @@
 find_pair_feature(
   target_mz,
   target_rt,
+  polarity,
   source_feature_id,
   labeled_feature_table,
   mz_tol,

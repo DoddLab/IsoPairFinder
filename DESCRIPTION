@@ -1,7 +1,7 @@
 Package: IsoPairFinder
 Type: Package
 Title: IsoPairFinder: A Package for Finding Isotopic Pairs in Stable Isotope Tracing Metabolomics Data (LC-MS)
-Version: 0.1.4
+Version: 1.0.0
 Author: Zhiwei Zhou <zhouzw@stanford.edu>
 Maintainer: Zhiwei Zhou <zhouzw@stanford.edu>
 Description: This package is designed to identify potential intermediates from Stable 

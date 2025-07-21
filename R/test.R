@@ -58,7 +58,7 @@
 #
 # find_intemidates(peak_table_unlabel = 'peak_table_C12.csv',
 #                  peak_table_label = 'peak_table_C13.csv',
-#                  sample_info = 'sample_info.xlsx',
+#                  sample_info = 'sample_info.csv',
 #                  path = '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_mzmine/',
 #                  polarity = 'positive',
 #                  control_group = c("WT"),
@@ -107,3 +107,19 @@
 # load('~/Project/00_Uric_Acid_project/Data/20250619_demo_data/test/00_tracer_result/00_intermediate_data/pair_table.RData')
 # load('~/Project/00_Uric_Acid_project/Data/20250619_demo_data/test/00_tracer_result/00_intermediate_data/feature_sig_label')
 # load('~/Project/00_Uric_Acid_project/Data/20250619_demo_data/test/00_tracer_result/00_intermediate_data/feature_sig_unlabel')
+
+#
+# # analysis of hyuA
+# find_intemidates(peak_table_unlabel = 'peak_table_C12.csv',
+#                  peak_table_label = 'peak_table_C13.csv',
+#                  sample_info = 'sample_info.csv',
+#                  path = '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_mzmine',
+#                  polarity = 'positive',
+#                  control_group = c("WT"),
+#                  case_group = c('hyuA'),
+#                  mz_tol = 10,
+#                  rt_tol = 0.05,
+#                  p_value_cutoff = 0.05,
+#                  p_adjust = TRUE,
+#                  fold_change_cutoff = 20,
+#                  is_recognize_adducts = TRUE)

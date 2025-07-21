@@ -2124,6 +2124,7 @@ self_check_isf <- function(list_peak_group_annotation_merge,
   # list_peak_group_annotation_merge$`173.0668@3.511`@peak_list
 
   while (length(unchecked_peak_groups) > 0) {
+    # browser()
     temp_peak_group_name <- unchecked_peak_groups[1]
     cat(temp_peak_group_name, ' ')
     temp_base_mz <- list_peak_group_annotation_merge[[temp_peak_group_name]]@base_peak_mz

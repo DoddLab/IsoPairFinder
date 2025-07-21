@@ -301,10 +301,12 @@ find_intemidates <- function(peak_table_unlabel,
   message(crayon::blue('3. Find pairs from these enriched features ... \n'))
 
   isotope_label_matched <- pbapply::pbmapply(function(x, y, z){
+    # browser()
     cat(x, '@', y, '\n')
     find_pair_feature(target_mz = x,
                       target_rt = y,
                       source_feature_id = z,
+                      polarity = polarity,
                       labeled_feature_table = feature_sig_label,
                       mz_tol = 15,
                       rt_tol = rt_tol)
@@ -317,7 +319,7 @@ find_intemidates <- function(peak_table_unlabel,
 
   pair_table <- feature_sig_unlabel %>%
     dplyr::left_join(isotope_label_matched, by = c('id' = 'source_feature'), multiple = "all") %>%
-    dplyr::select(id, matched_feature, mz:rt, actual_mz, actual_rt, mass_shift_label, p_values, q_values, fold_change, avg_abundance_case) %>%
+    dplyr::select(id, matched_feature, mz:rt, actual_mz, actual_rt, mass_shift_label, pred_formula, p_values, q_values, fold_change, avg_abundance_case) %>%
     dplyr::rename('unlabeled_feature_id' = 'id',
                   'labelded_feature_id' = 'matched_feature',
                   'unlabeled_mz' = 'mz',
@@ -340,16 +342,27 @@ find_intemidates <- function(peak_table_unlabel,
   save(pair_table,
        file = file.path(path, '00_tracer_result', '00_intermediate_data', 'pair_table.RData'))
 
+  # refine the digits with 4 digits and scientific notation
+  pair_table2 <- pair_table %>%
+    dplyr::mutate(p_value_unlabel = formatC(p_value_unlabel, digits = 4, format = 'e'),
+                  q_value_unlabel = formatC(q_value_unlabel, digits = 4, format = 'e'),
+                  fold_change_unlabel = formatC(fold_change_unlabel, digits = 4, format = 'e'),
+                  average_abundance_unlabel = formatC(average_abundance_unlabel, digits = 4, format = 'e'),
+                  p_value_label = formatC(p_value_label, digits = 4, format = 'e'),
+                  q_value_label = formatC(q_value_label, digits = 4, format = 'e'),
+                  fold_change_label = formatC(fold_change_label, digits = 4, format = 'e'),
+                  average_abundance_label = formatC(average_abundance_label, digits = 4, format = 'e'))
+
 
   # 4. Export the results
   message(crayon::yellow('Result: There are ', nrow(pair_table), 'labeled pairs are found.\n'))
-  print(knitr::kable(pair_table))
+  print(knitr::kable(pair_table2))
 
   if (is_recognize_adducts) {
     table_export <- list('raw_data_unlabel' = raw_data_unlabel,
                          'raw_data_label' = raw_data_label,
                          'recognized_peaks_unlabel' = result_peak_recognization_unlabel,
-                         'paired_table' = pair_table)
+                         'paired_table' = pair_table2)
     dir.create(file.path(path, '00_tracer_result'), recursive = TRUE, showWarnings = FALSE)
     writexl::write_xlsx(table_export,
                         path = file.path(path, '00_tracer_result', 'tracer_pair_result.xlsx'),
@@ -357,7 +370,7 @@ find_intemidates <- function(peak_table_unlabel,
   } else {
     table_export <- list('raw_data_unlabel' = raw_data_unlabel,
                          'raw_data_label' = raw_data_label,
-                         'paired_table' = pair_table)
+                         'paired_table' = pair_table2)
     dir.create(file.path(path, '00_tracer_result'), recursive = TRUE, showWarnings = FALSE)
     writexl::write_xlsx(table_export,
                         path = file.path(path, '00_tracer_result', 'tracer_pair_result.xlsx'),
@@ -473,14 +486,17 @@ find_intemidates <- function(peak_table_unlabel,
 
 find_pair_feature <- function(target_mz,
                               target_rt,
+                              polarity,
                               source_feature_id,
                               labeled_feature_table,
                               mz_tol,
                               rt_tol) {
   # browser()
 
-  # predict target_mz formula
-  pred_formula_table <- MassToolsMjhelf::calcMF(mz = target_mz, z = 1, ppm = mz_tol)
+  target_z <- ifelse(polarity == 'positive', 1, -1)
+
+    # predict target_mz formula
+  pred_formula_table <- MassToolsMjhelf::calcMF(mz = target_mz, z = target_z, ppm = mz_tol)
 
   # if the formula can't be predicted, export the NA
   if (length(pred_formula_table) < 1)  {
@@ -492,28 +508,50 @@ find_pair_feature <- function(target_mz,
                          mz_error = NA,
                          theo_rt = NA,
                          actual_rt = NA,
-                         rt_error = NA)
+                         rt_error = NA,
+                         pred_formula = NA,
+                         stringsAsFactors = FALSE)
     return(output)
   }
 
-  carbon_number_max <- pred_formula_table$MF %>%
+  # save the predicted formula list
+  temp_formula_list <- pred_formula_table$MF %>%
     lapply(function(x){
       temp_result <- rcdk::get.formula(x)
-      temp_result@isotopes %>%
+      temp_carbon_number <- temp_result@isotopes %>%
         tibble::as_tibble() %>%
         dplyr::filter(isoto == 'C') %>%
-        dplyr::pull(number) %>%
-        as.numeric()
+        dplyr::pull(number)
+      temp_result <- data.frame(
+        MF = x,
+        carbon_number = as.numeric(temp_carbon_number),
+        stringsAsFactors = FALSE
+      )
+      return(temp_result)
     }) %>%
-    unlist() %>%
-    unique() %>%
-    max()
+    dplyr::bind_rows()
+
+  # carbon_number_max <- pred_formula_table$MF %>%
+  #   lapply(function(x){
+  #     temp_result <- rcdk::get.formula(x)
+  #     temp_result@isotopes %>%
+  #       tibble::as_tibble() %>%
+  #       dplyr::filter(isoto == 'C') %>%
+  #       dplyr::pull(number) %>%
+  #       as.numeric()
+  #   }) %>%
+  #   unlist() %>%
+  #   unique() %>%
+  #   max()
+
+  carbon_number_max <- max(temp_formula_list$carbon_number, na.rm = TRUE)
 
   possible_mz <- target_mz + c(1:carbon_number_max)*1.00335
 
   possible_table <- data.frame(mz = possible_mz,
                                rt = target_rt,
                                mass_shift_label = paste0('13C*', c(1:carbon_number_max)),
+                               carbon_number = c(1:carbon_number_max),
                                stringsAsFactors = FALSE)
 
   temp_label_table <- labeled_feature_table %>%
@@ -538,7 +576,9 @@ find_pair_feature <- function(target_mz,
                          mz_error = NA,
                          theo_rt = NA,
                          actual_rt = NA,
-                         rt_error = NA)
+                         rt_error = NA,
+                         pred_formula = NA,
+                         stringsAsFactors = FALSE)
     return(output)
   }
 
@@ -557,13 +597,30 @@ find_pair_feature <- function(target_mz,
   # source_feature <- paste0(target_mz, '@', target_rt)
   source_feature <- source_feature_id
 
+  # select the top 3 matched formula
   label_isotope <- possible_table[idx1,] %>% dplyr::pull(mass_shift_label)
+  matched_carbon_number <- possible_table[idx1,] %>% dplyr::pull(carbon_number)
+
+  pred_formula_label <- sapply(matched_carbon_number, function(a){
+    top_formula <- temp_formula_list %>%
+      dplyr::filter(carbon_number == a) %>%
+      dplyr::slice(1:3)
+    if (nrow(top_formula) == 0) {
+      top_formula <- NA
+    } else {
+      top_formula <- top_formula %>%
+        dplyr::pull(MF) %>%
+        paste(collapse = ';')
+    }
+  })
+
 
   output <- matched_result %>%
     dplyr::mutate(source_feature = source_feature,
                   matched_feature = matched_feature,
-                  mass_shift_label = label_isotope) %>%
-    dplyr::select(source_feature, matched_feature, mass_shift_label, mz1, mz2, `mz error`, rt1, rt2, `rt error`) %>%
+                  mass_shift_label = label_isotope,
+                  pred_formula = pred_formula_label) %>%
+    dplyr::select(source_feature, matched_feature, mass_shift_label, mz1, mz2, `mz error`, rt1, rt2, `rt error`, pred_formula) %>%
     dplyr::rename('theo_mz' = 'mz1',
                   'actual_mz' = 'mz2',
                   'mz_error' = 'mz error',
@@ -585,7 +642,7 @@ find_pair_feature <- function(target_mz,
 # startup massage --------------------------------------------------------------
 .onAttach <- function(libname, pkgname){
   packageStartupMessage("
-Version 0.1.4
+Version 1.0.0
 -------------
 Authors: Zhiwei Zhou
 Maintainer: Zhiwei Zhou
@@ -605,5 +662,10 @@ Updates (20250630)
 - Update the README and NEWS
 - Update the depends
 
+Updates (20250720)
+-------------
+- Refine the digits in the paired table
+- Export the predicted formula in the paired_table
+- Update the README and NEWS
 ")
 }
