@@ -493,10 +493,11 @@ find_pair_feature <- function(target_mz,
                               rt_tol) {
   # browser()
 
-  target_z <- ifelse(polarity == 'positive', 1, -1)
+  # target_z <- ifelse(polarity == 'positive', 1, -1)
+  target_mono_mass <- ifelse(polarity == 'positive', target_mz - 1.0073, target_mz + 1.0073)
 
     # predict target_mz formula
-  pred_formula_table <- MassToolsMjhelf::calcMF(mz = target_mz, z = target_z, ppm = mz_tol)
+  pred_formula_table <- MassToolsMjhelf::calcMF(mz = target_mono_mass, z = 0, ppm = mz_tol)
 
   # if the formula can't be predicted, export the NA
   if (length(pred_formula_table) < 1)  {
@@ -664,6 +665,7 @@ Updates (20250630)
 
 Updates (20250720)
 -------------
+- Fix charger parameter setting for formula prediction
 - Refine the digits in the paired table
 - Export the predicted formula in the paired_table
 - Update the README and NEWS

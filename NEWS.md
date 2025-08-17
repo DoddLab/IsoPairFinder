@@ -24,6 +24,7 @@
 - Update the depends
 
 # IsoPairFinder 1.0.0 (20250720)
+- Fix charger parameter setting for formula prediction
 - Refine the digits in the paired table
 - Export the predicted formula in the paired_table
 - Update the README and NEWS

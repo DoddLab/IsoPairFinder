@@ -10,7 +10,7 @@
 ## Overview
 **IsoPairFinder** is an R package designed to identify the pathway intermediate feature pairs in stable isotope tracing metabolomics studies. By integrating genetic manipulation techniques, it enables researchers to efficiently screen candidate features and prioritize biologically relevant intermediates for validation. It provides the a end-to-end workflow serving this objective, including (1) differential analysis; (2) merging of the redundant LC-MS features (adducts, neutral losses, and in-source fragments); (3) pairing 12C/13C features to determine potential intermediates. It is also compatible with different metabolomics data processing tools. The **Detailed Tutorial** could be found [here](https://doddlab.github.io/IsoPairFinder_Tutorials/). 
 
-We also deployed IsoPairFinder in the [GNPS2 ecosystem](https://gnps2.org/workflowinput?workflowname=isopairspec_nextflow_workflow) with user friendly interface.
+We also deployed IsoPairFinder in the [GNPS2 ecosystem](https://gnps2.org/workflowinput?workflowname=isopairfinder_nextflow_workflow) with user friendly interface.
 
 
 
@@ -52,13 +52,13 @@ The Demo data could be downloaded [here](https://github.com/DoddLab/IsoPairFinde
 - `WT_12C`: the folder contains raw data of unlabeled WT (mzML). In demo case, it is "WT_12C" for WT unlabeled group.
   - The rule of folder name is "group_tracer_group". The "group" and "tracer_group" should be consistent with `group` and `tracer_group` columns in the `sample_info.csv` files. 
   - The mzML file names should be included in the `sample_info.csv` file. 
-- `hyuA_12C`: the folder contains raw data of unlabeled mutation (mzML). In demo case, it is "hyuA_12C" for HyuA unlabeled group.
+- `MUTANT_12C`: the folder contains raw data of unlabeled mutation (mzML). In demo case, it is "MUTANT_12C" for HyuA unlabeled group.
   - The rule of folder name is "group_tracer_group". The "group" and "tracer_group" should be consistent with `group` and `tracer_group` columns in the `sample_info.csv` files. 
   - The mzML file names should be included in the `sample_info.csv` file. 
 - `WT_13C`: the folder contains raw data of labeled WT (mzML). In demo case, it is "WT_13C" for WT labeled group.
   - The rule of folder name is "group_tracer_group". The "group" and "tracer_group" should be consistent with `group` and `tracer_group` columns in the `sample_info.csv` files. 
   - The mzML file names should be included in the `sample_info.csv` file. 
-- `hyuA_13C`: the folder contains raw data of labeled mutation (mzML). The rule of folder name is "group_tracer_group". In demo case, it is "hyuA_13C" for HyuA labeled group.
+- `MUTANT_13C`: the folder contains raw data of labeled mutation (mzML). The rule of folder name is "group_tracer_group". In demo case, it is "MUTANT_13C" for HyuA labeled group.
   - The rule of folder name is "group_tracer_group". The "group" and "tracer_group" should be consistent with `group` and `tracer_group` columns in the `sample_info.csv` files. 
   - The mzML file names should be included in the `sample_info.csv` file. 
 - `ms2`: the folder includes MS/MS files (mzML)
@@ -69,14 +69,14 @@ The Demo data could be downloaded [here](https://github.com/DoddLab/IsoPairFinde
 library(tidyverse)
 library(IsoPairFinder)
 
-# analysis of HyuA 
+# analysis of HyuA (Mutant) 
 find_intemidates(peak_table_unlabel = 'peak_table_C12.csv',
                  peak_table_label = 'peak_table_C13.csv',
                  sample_info = 'sample_info.csv',
-                 path = '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_msdial/',
+                 path = '~/Project/00_Uric_Acid_project/Data/20250817_submit_test/',
                  polarity = 'positive',
                  control_group = c("WT"),
-                 case_group = c('hyuA'),
+                 case_group = c('MUTANT'),
                  mz_tol = 10,
                  rt_tol = 0.05,
                  p_value_cutoff = 0.05,
@@ -87,16 +87,16 @@ find_intemidates(peak_table_unlabel = 'peak_table_C12.csv',
 ```
 
 ## Availability
-| Access Method    | Type | Link |
-|:------------------ |:------------------|:---------|
-| R Package        | Command line tools | [Link](https://github.com/DoddLab/IsoPairFinder) |
-| Web Server       | Graphic interface workflow within GNPS2 ecosystem | [Link](https://gnps2.org/workflowinput?workflowname=isopairspec_nextflow_workflow) |
+| Access Method    | Type | Link | Document |
+|:------------------ |:------------------|:---------|:---------|
+| R Package        | Command line tools | [Link](https://github.com/DoddLab/IsoPairFinder) | [Documentation](https://doddlab.github.io/IsoPairFinder_Tutorials/) |
+| Web Server       | Graphic interface within GNPS2 ecosystem | [Link](https://gnps2.org/workflowinput?workflowname=isopairfinder_nextflow_workflow) | [Documentation](https://wang-bioinformatics-lab.github.io/GNPS2_Documentation/isopairfinder/) |
 
 
 ## Citation
 If you use `IsoPairFinder` in your research, please consider citing it. 
 
-- Zhiwei Zhou, Dylan Dodd*, IsoPairFinder: A tool for biochemical pathway discovery using stable isotope tracing metabolomics, In preparation, 2025
+- Zhiwei Zhou, Dylan Dodd*, IsoPairFinder: A tool for biochemical pathway discovery using stable isotope tracing metabolomics, Submitted, 2025
 
 
 ## Contact
