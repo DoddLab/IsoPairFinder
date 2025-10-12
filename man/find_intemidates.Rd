@@ -18,6 +18,7 @@ find_intemidates(
   p_value_cutoff = 0.05,
   p_adjust = TRUE,
   fold_change_cutoff = 20,
+  mz_formula_pred = 15,
   is_recognize_adducts = TRUE
 )
 }
@@ -47,6 +48,8 @@ find_intemidates(
 \item{p_adjust}{whether to adjust p-values using the Benjamini-Hochberg method. Default: TRUE}
 
 \item{fold_change_cutoff}{Default: 20}
+
+\item{mz_formula_pred}{mz tolerance for formula prediction. Default: 15 ppm}
 
 \item{is_recognize_adducts}{whether to recognize adducts, neutral losses, and in-source fragments. Default: TRUE}
 }

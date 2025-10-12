@@ -28,3 +28,7 @@
 - Refine the digits in the paired table
 - Export the predicted formula in the paired_table
 - Update the README and NEWS
+
+
+# IsoPairFinder 1.0.1 (20251010)
+- Add a mz_formula_pred parameter to control the formula prediction

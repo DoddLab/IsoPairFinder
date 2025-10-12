@@ -15,6 +15,7 @@
 #' @param p_value_cutoff Default: 0.05
 #' @param p_adjust whether to adjust p-values using the Benjamini-Hochberg method. Default: TRUE
 #' @param fold_change_cutoff Default: 20
+#' @param mz_formula_pred mz tolerance for formula prediction. Default: 15 ppm
 #' @param is_recognize_adducts whether to recognize adducts, neutral losses, and in-source fragments. Default: TRUE
 #' @importFrom magrittr %>%
 #' @importFrom crayon blue red yellow green bgRed
@@ -68,6 +69,7 @@ find_intemidates <- function(peak_table_unlabel,
                              p_value_cutoff = 0.05,
                              p_adjust = TRUE,
                              fold_change_cutoff = 20,
+                             mz_formula_pred = 15,
                              is_recognize_adducts = TRUE) {
   # browser()
 
@@ -308,8 +310,16 @@ find_intemidates <- function(peak_table_unlabel,
                       source_feature_id = z,
                       polarity = polarity,
                       labeled_feature_table = feature_sig_label,
-                      mz_tol = 15,
+                      mz_tol = mz_formula_pred,
                       rt_tol = rt_tol)
+
+    # find_pair_feature(target_mz = x,
+    #                   target_rt = y,
+    #                   source_feature_id = z,
+    #                   polarity = polarity,
+    #                   labeled_feature_table = feature_sig_label,
+    #                   mz_tol = 20,
+    #                   rt_tol = rt_tol)
   },
   x = feature_sig_unlabel$mz,
   y = feature_sig_unlabel$rt,
@@ -669,5 +679,9 @@ Updates (20250720)
 - Refine the digits in the paired table
 - Export the predicted formula in the paired_table
 - Update the README and NEWS
+
+Updates (20251010)
+-------------
+- Add a mz_formula_pred parameter to control the formula prediction
 ")
 }
