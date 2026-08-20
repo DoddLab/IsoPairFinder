@@ -68,6 +68,7 @@ find_intemidates <- function(peak_table_unlabel,
                              rt_tol = 0.05,
                              p_value_cutoff = 0.05,
                              p_adjust = TRUE,
+                             var_equal_t_test = TRUE,
                              fold_change_cutoff = 20,
                              mz_formula_pred = 15,
                              is_recognize_adducts = TRUE) {
@@ -172,6 +173,7 @@ find_intemidates <- function(peak_table_unlabel,
                                     tracer_condition = '12C',
                                     p_value_cutoff = p_value_cutoff,
                                     p_adjust = p_adjust,
+                                    var_equal_t_test = var_equal_t_test,
                                     fold_change_cutoff = fold_change_cutoff)
 
   raw_data_label <- diff_analysis(peak_table = raw_data_label,
@@ -181,6 +183,7 @@ find_intemidates <- function(peak_table_unlabel,
                                   tracer_condition = '13C',
                                   p_value_cutoff = p_value_cutoff,
                                   p_adjust = p_adjust,
+                                  var_equal_t_test = var_equal_t_test,
                                   fold_change_cutoff = fold_change_cutoff)
 
   dir.create(file.path(path, '00_tracer_result', '00_intermediate_data'), showWarnings = FALSE, recursive = TRUE)
@@ -653,7 +656,7 @@ find_pair_feature <- function(target_mz,
 # startup massage --------------------------------------------------------------
 .onAttach <- function(libname, pkgname){
   packageStartupMessage("
-Version 1.0.0
+Version 1.0.3
 -------------
 Authors: Zhiwei Zhou
 Maintainer: Zhiwei Zhou
@@ -683,5 +686,13 @@ Updates (20250720)
 Updates (20251010)
 -------------
 - Add a mz_formula_pred parameter to control the formula prediction
+
+Updates (20260717)
+-------------
+- Fix self_check_isf crash when removing multiple high-correlation ISF peak groups (use %in% instead of ==)
+
+Updates (20260819)
+-------------
+- Add modify_tidymass_table function to support TidyMass outputs
 ")
 }

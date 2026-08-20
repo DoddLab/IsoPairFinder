@@ -117,6 +117,143 @@ modify_xcms_table <- function(table_xcms,
 
 
 
+################################################################################
+# modify_tidymass_table ------------------------------------------------------------
+
+#' @title modify_tidymass_table
+#' @author Zhiwei Zhou
+#' @param table_tidymass peak table from tidymass
+#' @param table_camera isotopes and adducts annotated by the CAMERA
+#' @param table_sample_info sample information table
+#' @param path working directory. Default: "."
+#' @param file_output 'converted_peak_table.csv'
+#' @importFrom magrittr %>%
+#' @importFrom crayon blue red yellow green bgRed
+#' @importFrom stringr str_detect str_extract
+#' @export
+#' @examples
+#' \dontrun{
+#' table_tidymass <- '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_tidymass/00_raw_data_processing_12C/Result/Peak_table_for_cleaning.csv'
+#' table_camera <- '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_tidymass/00_raw_data_processing_12C/00_raw_data_processing/adduct_result_camera.xlsx'
+#' table_sample_info <- '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_tidymass/sample_info.xlsx'
+#' modify_tidymass_table(table_tidymass = table_tidymass,
+#'                       table_camera = table_camera,
+#'                       table_sample_info = table_sample_info,
+#'                   path = '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data/hyuA/C12')
+#' }
+
+# table_tidymass <- '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_tidymass/00_raw_data_processing_12C/Result/Peak_table_for_cleaning.csv'
+# table_camera <- '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_tidymass/00_raw_data_processing_12C/00_raw_data_processing/adduct_result_camera.xlsx'
+# table_sample_info <- '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data_tidymass/sample_info.xlsx'
+
+# modify_tidymass_table(table_tidymass = table_tidymass,
+#                       table_camera = table_camera,
+#                       table_sample_info = table_sample_info,
+#                       path = '~/Project/00_Uric_Acid_project/Data/20250606_isopairfind_test/Demo_data/hyuA/C12',
+#                       polarity = 'positive')
+
+modify_tidymass_table <- function(table_tidymass,
+                                table_camera,
+                                table_sample_info,
+                                path = '.',
+                                impute_NA = TRUE,
+                                impute_NA_value = 100,
+                                polarity = c('positive', 'negative'),
+                                file_output = 'converted_peak_table.csv') {
+  # browser()
+  match.arg(polarity)
+  cat(crayon::bgBlue('Modifying tidymass table...'), '\n')
+  table_tidymass <- readr::read_csv(table_tidymass, show_col_types = FALSE)
+
+  # According to file table to read the table_camera using read_xlsx or read_csv
+  if (stringr::str_detect(table_camera, '\\.xlsx')) {
+    # table_camera <- readxl::read_xlsx(file.path(path, table_camera))
+    table_camera <- readxl::read_xlsx(table_camera)
+  } else if (stringr::str_detect(table_camera, '\\.csv')) {
+    # table_camera <- readr::read_csv(file.path(path, table_camera), show_col_types = FALSE)
+    table_camera <- readr::read_csv(table_camera, show_col_types = FALSE)
+  } else {
+    stop('The table_camera should be a csv or xlsx file')
+  }
+
+  if (polarity == 'positive') {
+      table_camera <- table_camera %>%
+        dplyr::mutate(name = paste0(name, '_POS'))
+  } else {
+      table_camera <- table_camera %>%
+        dplyr::mutate(name = paste0(name, '_NEG'))
+  }
+
+  # According to file table to read the table using read_xlsx or read_csv
+  if (stringr::str_detect(table_sample_info, '\\.xlsx')) {
+    sample_info <- readxl::read_xlsx(table_sample_info)
+  } else if (stringr::str_detect(table_sample_info, '\\.csv')) {
+    sample_info <- readr::read_csv(table_sample_info, show_col_types = FALSE)
+  } else {
+    stop('The sample_info should be a csv or xlsx file')
+  }
+
+  temp_sample_id <- colnames(table_tidymass)[colnames(table_tidymass) %in% sample_info$sample_id]
+  # select columns name, mzmed, rtmed, and columns after maxint
+  table_tidymass <- table_tidymass %>%
+    dplyr::select(variable_id:rt, any_of(temp_sample_id)) %>%
+    dplyr::rename(id = variable_id)
+
+  # imputate NA values with impute_NA_value
+  if (impute_NA) {
+    table_tidymass <- table_tidymass %>%
+      dplyr::mutate(dplyr::across(all_of(temp_sample_id), ~ifelse(is.na(.), impute_NA_value, .)))
+  }
+
+  # split isotopes columns into multiple columns according to the label "[\\d+]"
+  isotope_table <- table_camera %>%
+    dplyr::filter(!is.na(isotopes)) %>%
+    dplyr::mutate(isotope_group = stringr::str_extract(isotopes, "\\[\\d+\\]"),
+                  isotope_label = stringr::str_extract(isotopes, "\\[M.*].+"))
+
+  unique_isotope_group <- unique(isotope_table$isotope_group)
+
+  monoisotope_labels <- sapply(unique_isotope_group, function(x){
+    isotope_data <- isotope_table %>%
+      dplyr::filter(isotope_group == x) %>%
+      dplyr::filter(isotope_label %in% c('[M]+', '[M]2+')) %>%
+      dplyr::pull(name)
+  })
+
+  isotope_labels <- lapply(unique_isotope_group, function(x){
+    isotope_data <- isotope_table %>%
+      dplyr::filter(isotope_group == x) %>%
+      dplyr::filter(!(isotope_label %in% c('[M]+', '[M]2+'))) %>%
+      dplyr::pull(name)
+  })
+
+  names(isotope_labels) <- monoisotope_labels
+
+  # remove the isotopes and add a column of isotope label
+  table_tidymass <- table_tidymass %>%
+    dplyr::filter(!(id %in% unlist(isotope_labels))) %>%
+    dplyr::mutate('ms1_isotopes' = NA) %>%
+    dplyr::select(id:rt, ms1_isotopes, everything())
+
+  temp_idx <- match(monoisotope_labels, table_tidymass$id)
+  temp_label <- sapply(isotope_labels, function(x){paste0(x, collapse = '; ')})
+
+  table_tidymass$ms1_isotopes[temp_idx] <- temp_label
+
+  if(!is.null(path)) {
+    # write the modified table to a csv file
+    readr::write_csv(table_tidymass,
+                     file.path(path, file_output))
+  }
+
+
+  cat(crayon::green('The tidymass table is modified successfully!\n'),
+      crayon::blue('The modified table is saved to:'),
+      crayon::yellow(file.path(path, file_output)), '\n')
+}
+
+
+
 
 ################################################################################
 # modify_msdial_table ------------------------------------------------------------

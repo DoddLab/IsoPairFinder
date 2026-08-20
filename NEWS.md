@@ -32,3 +32,9 @@
 
 # IsoPairFinder 1.0.1 (20251010)
 - Add a mz_formula_pred parameter to control the formula prediction
+
+# IsoPairFinder 1.0.2 (20260717)
+- Fix self_check_isf crash when removing multiple high-correlation ISF peak groups (use %in% instead of ==)
+
+# IsoPairFinder 1.0.3 (20260819)
+- Add modify_tidymass_table function to support TidyMass outputs

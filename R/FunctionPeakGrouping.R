@@ -2161,7 +2161,9 @@ self_check_isf <- function(list_peak_group_annotation_merge,
         dplyr::bind_rows(temp_result)
 
       # remove the ISF(HighCor) peak group
-      temp_idx <- which(names(list_peak_group_annotation_merge) == peak_high_cor_isf)
+      # note: peak_high_cor_isf may contain multiple peak names, so use %in%
+      # rather than == (which recycles and removes the wrong groups)
+      temp_idx <- which(names(list_peak_group_annotation_merge) %in% peak_high_cor_isf)
       list_peak_group_annotation_merge <- list_peak_group_annotation_merge[-temp_idx]
     }
 

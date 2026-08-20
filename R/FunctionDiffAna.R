@@ -7,6 +7,7 @@
 #' @param tracer_condition tracer condition, either '12C' or '13C'. Default: c('12C', '13C')
 #' @param p_value_cutoff Default: 0.05
 #' @param p_adjust Default: TRUE
+#' @param var_equal_t_test Whether use the var.equal t-test. Default: TRUE
 #' @param fold_change_cutoff Default: 20
 #' @importFrom magrittr %>%
 #' @importFrom crayon blue red yellow green bgRed
@@ -47,6 +48,7 @@ diff_analysis <- function(peak_table,
                           tracer_condition = c('12C', '13C'),
                           p_value_cutoff = 0.05,
                           p_adjust = TRUE,
+                          var_equal_t_test = TRUE,
                           fold_change_cutoff = 20,
                           abundance_cutoff = 10^4) {
   # browser()
@@ -73,10 +75,19 @@ diff_analysis <- function(peak_table,
     dplyr::select(dplyr::all_of(temp_sample_name))
   idx_control <- match(sample_id_control, colnames(temp_data))
   idx_case <- match(sample_id_case, colnames(temp_data))
-  p_values <- apply(temp_data, 1, function(x){
-    result <- t.test(x[idx_control], x[idx_case], alternative = 'two.sided', var.equal = TRUE)
-    result$p.value
-  })
+
+  if (var_equal_t_test) {
+    p_values <- apply(temp_data, 1, function(x){
+      result <- t.test(x[idx_control], x[idx_case], alternative = 'two.sided', var.equal = TRUE)
+      result$p.value
+    })
+  } else {
+    p_values <- apply(temp_data, 1, function(x){
+      result <- t.test(x[idx_control], x[idx_case], alternative = 'two.sided')
+      result$p.value
+    })
+  }
+
   q_values <- p.adjust(p_values, method = 'BH')
 
   fold_change <- apply(temp_data, 1, function(x){
