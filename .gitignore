@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+CODE_STYLE.md
+CODE_STYLE_GENERAL.md
+
+/.quarto/

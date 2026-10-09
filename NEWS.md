@@ -38,3 +38,6 @@
 
 # IsoPairFinder 1.0.3 (20260819)
 - Add modify_tidymass_table function to support TidyMass outputs
+
+# IsoPairFinder 1.0.4 (20261009)
+- Update the Citation

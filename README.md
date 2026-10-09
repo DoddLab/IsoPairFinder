@@ -96,7 +96,7 @@ find_intemidates(peak_table_unlabel = 'peak_table_C12.csv',
 ## Citation
 If you use `IsoPairFinder` in your research, please consider citing it. 
 
-- Zhiwei Zhou, Dylan Dodd*, IsoPairFinder: A tool for biochemical pathway discovery using stable isotope tracing metabolomics, Submitted, 2025
+- **Zhiwei Zhou**, Yuanyuan Liu, Mingxun Wang, Dylan Dodd*, IsoPairFinder: A Computational Workflow for Prioritizing LC–MS Feature Pairs Representing Candidate Microbial Pathway Intermediates from Stable Isotope Tracing Metabolomics, *J. Am. Soc. Mass Spectrom.*, **2026**, In Press [Link](https://doi.org/10.1021/jasms.6c00253)
 
 
 ## Contact
